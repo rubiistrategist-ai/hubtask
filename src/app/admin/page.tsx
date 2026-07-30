@@ -179,8 +179,8 @@ export default function AdminDashboard() {
     toast.success("Link da comunidade salvo!");
   };
 
-  // Agrupar módulos por seção
-  const sections = modules.reduce((acc, mod) => {
+    // Agrupar módulos por seção (Tipado para evitar erro no build)
+  const sections: Record<string, any[]> = modules.reduce((acc, mod) => {
     const sec = mod.section || "Curso Principal";
     if (!acc[sec]) acc[sec] = [];
     acc[sec].push(mod);
@@ -252,7 +252,7 @@ export default function AdminDashboard() {
         <div className="space-y-8">
           <Button onClick={handleAddModule} className="bg-primary"><PlusCircle className="w-4 h-4 mr-2" /> Adicionar Novo Módulo</Button>
           
-                    {Object.entries(sections).map(([sectionName, mods]: [string, any[]]) => (
+      {Object.entries(sections).map(([sectionName, mods]) => (
             <div key={sectionName}>
               <h3 className="text-xl font-bold mb-4 text-primary">{sectionName}</h3>
               <div className="space-y-4 w-full">
