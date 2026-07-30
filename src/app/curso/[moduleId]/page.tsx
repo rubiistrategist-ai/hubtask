@@ -241,7 +241,7 @@ export default function ModulePage() {
                     <RotateCcw className="mr-2 h-5 w-5" />
                     Desmarcar Aula
                   </Button>
-                </AlertDialogTrigger>
+                               </Trigger>
                 <AlertDialogContent className="bg-card/90 backdrop-blur-xl border-border/50">
                   <AlertDialogHeader>
                     <AlertDialogTitle>Desmarcar esta aula?</AlertDialogTitle>
