@@ -17,7 +17,8 @@ import { useProgressStore } from "@/store/useProgressStore";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import Link from "next/link";
-import ReactPlayer from "react-player";
+import RPlayer from "react-player";
+const ReactPlayer = RPlayer as any;
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/utils/supabase-client";
 import { Lock, CheckCircle2, Circle, Award, ChevronRight, Home, RotateCcw, Download, Link as LinkIcon, ExternalLink, ArrowRight } from "lucide-react";
@@ -201,11 +202,9 @@ export default function ModulePage() {
                 )}
               </div>
             )}
-            
-                        {moduleData.video_url ? (
-              // @ts-ignore
+            {moduleData.video_url ? (
               <ReactPlayer 
-                url={moduleData.video_url}  
+                url={moduleData.video_url} 
                 width="100%" 
                 height="100%" 
                 controls={true}
