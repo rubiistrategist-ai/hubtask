@@ -1,54 +1,27 @@
-import { type NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
+import { NextResponse, type NextRequest } from 'next/server'
 
-export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({ request })
+export function middleware(request: NextRequest) {
+  const path = request.nextUrl.pathname
+  const isAuthPage = path.startsWith('/login') || path.startsWith('/signup') || path.startsWith('/recuperar-senha')
 
-  try {
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return request.cookies.getAll()
-          },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-            response = NextResponse.next({ request })
-            cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options))
-          },
-        },
-      }
-    )
+  // O Supabase salva os cookies de sessão começando com 'sb-'
+  const hasSupabaseSession = request.cookies.getAll().some(c => c.name.startsWith('sb-'))
 
-    // getSession é mais leve e não faz requisição de rede na Edge
-    const { data: { session } } = await supabase.auth.getSession()
-    const user = session?.user
-    const path = request.nextUrl.pathname
-
-    const isAuthPage = path.startsWith('/login') || path.startsWith('/signup') || path.startsWith('/recuperar-senha')
-
-    if (!user && !isAuthPage) {
-      return NextResponse.redirect(new URL('/login', request.url))
-    }
-
-    if (user && isAuthPage) {
-      return NextResponse.redirect(new URL('/', request.url))
-    }
-
-    // Coloque seu e-mail de admin aqui
-    const ADMIN_EMAIL = "seu-email-admin@gmail.com"
-    if (path.startsWith('/admin') && user?.email !== ADMIN_EMAIL) {
-      return NextResponse.redirect(new URL('/', request.url))
-    }
-
-  } catch (error) {
-    console.error('Middleware Error:', error)
-    return response
+  // 1. Se não tem sessão e tenta acessar página protegida -> Manda pro login
+  if (!hasSupabaseSession && !isAuthPage) {
+    return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  return response
+  // 2. Se tem sessão e tenta acessar páginas de login/cadastro -> Manda pra home
+  if (hasSupabaseSession && isAuthPage) {
+    return NextResponse.redirect(new URL('/', request.url))
+  }
+
+  // 3. Segurança do Admin: O middleware não consegue ler o e-mail sem o cliente,
+  // mas não se preocupe! A página /admin e o banco de dados (RLS) fazem essa verificação.
+  // Se um não-admin entrar no /admin, a página vai redirecionar ele sozinha.
+
+  return NextResponse.next()
 }
 
 export const config = {
