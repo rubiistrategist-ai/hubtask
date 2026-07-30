@@ -1,4 +1,6 @@
 "use client";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/utils/supabase-client";
 import { Card } from "@/components/ui/card";
@@ -14,6 +16,8 @@ import { toast } from "sonner";
 import Image from "next/image";
 
 export default function AdminDashboard() {
+  const router = useRouter();
+  const ADMIN_EMAIL = "rubiistrategist@gmail.com"; // COLOQUE SEU E-MAIL AQUI
   const [activeTab, setActiveTab] = useState('ranking');
   const [users, setUsers] = useState<any[]>([]);
   const [modules, setModules] = useState<any[]>([]);
@@ -31,6 +35,20 @@ export default function AdminDashboard() {
   const [isUploadingThumb, setIsUploadingThumb] = useState(false);
   const thumbInputRef = useRef<HTMLInputElement>(null);
 
+
+  // Bloqueio de segurança: Se não for o admin, joga pra Home
+  useEffect(() => {
+    const checkAdmin = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.email !== ADMIN_EMAIL) {
+        router.push('/');
+      }
+    };
+    checkAdmin();
+  }, [router]);
+
+  const [activeTab, setActiveTab] = useState('ranking');
+  
   useEffect(() => { fetchAll(); }, []);
 
   const fetchAll = async () => {
