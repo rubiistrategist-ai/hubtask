@@ -214,7 +214,8 @@ export default function ModulePage() {
             )}
             
             {moduleData.video_url ? (
-                            <ReactPlayer 
+              // @ts-expect-error - Tipagem do react-player conflita no build de produção
+              <ReactPlayer 
                 url={moduleData.video_url} 
                 width="100%" 
                 height="100%" 
