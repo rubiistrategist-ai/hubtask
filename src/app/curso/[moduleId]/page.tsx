@@ -17,7 +17,7 @@ import { useProgressStore } from "@/store/useProgressStore";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import Link from "next/link";
-import ReactPlayer from "react-player";
+import ReactPlayer from "react-player/lazy";
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/utils/supabase-client";
 import { Lock, CheckCircle2, Circle, Award, ChevronRight, Home, RotateCcw, Download, Link as LinkIcon, ExternalLink, ArrowRight } from "lucide-react";
@@ -56,14 +56,12 @@ export default function ModulePage() {
     fetchModule();
   }, [moduleId, setModuleOrder]);
 
-  // Foco automático no botão da tela de fim de vídeo (Acessibilidade)
   useEffect(() => {
     if (isVideoEnded && nextLessonBtnRef.current) {
       nextLessonBtnRef.current.focus();
     }
   }, [isVideoEnded]);
 
-  // SKELETON LOADING
   if (!moduleData) {
     return (
       <div className="p-6 md:p-10 max-w-6xl mx-auto pt-24 md:pt-10 animate-pulse">
@@ -83,7 +81,6 @@ export default function ModulePage() {
     );
   }
 
-  // Tela de Bloqueio
   if (!isUnlocked) {
     return (
       <div className="flex flex-col items-center justify-center h-screen p-6 text-center pt-20">
@@ -99,7 +96,6 @@ export default function ModulePage() {
     );
   }
 
-  // Lógica de Conclusão e Avanço
   const handleComplete = (auto = false) => {
     if (!isCompleted) {
       toggleLesson(moduleId);
@@ -120,14 +116,12 @@ export default function ModulePage() {
     }
   };
 
-  // Lógica para desmarcar a aula
   const handleUnmark = () => {
     toggleLesson(moduleId);
     toast.warning("Aula desmarcada. Os módulos seguintes foram bloqueados.");
   };
 
-  // Auto-check do vídeo assistido (80%) e Auto-concluir (95%)
-    const handleVideoProgress = (state: any) => {
+  const handleVideoProgress = (state: any) => {
     if (state.played >= 0.8) {
       const key = `${moduleData.id}-Assistiu o vídeo`;
       if (!lessonChecklist[key]) {
@@ -140,7 +134,6 @@ export default function ModulePage() {
     }
   };
 
-  // Verificação do Certificado (Última aula concluída)
   const isLastModule = currentIndex === allModules.length - 1;
   const courseCompleted = isLastModule && isCompleted;
 
@@ -165,10 +158,8 @@ export default function ModulePage() {
     );
   }
 
-  // Página do Player
   return (
     <div className="p-6 md:p-10 max-w-6xl mx-auto pt-20 md:pt-10">
-      {/* Breadcrumbs Premium */}
       <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
         <Link href="/" className="hover:text-primary flex items-center gap-1">
           <Home className="w-3 h-3" /> Início
@@ -187,14 +178,12 @@ export default function ModulePage() {
             transition={{ duration: 0.3 }}
             className="relative aspect-video bg-black rounded-xl overflow-hidden group shadow-2xl"
           >
-            {/* Skeleton Loading */}
             {!isPlayerReady && (
               <div className="absolute inset-0 flex items-center justify-center bg-zinc-900 animate-pulse z-20">
                 <div className="w-12 h-12 rounded-full border-4 border-zinc-800 border-t-primary animate-spin"></div>
               </div>
             )}
 
-            {/* TELA DE FIM DE VÍDEO CUSTOMIZADA */}
             {isVideoEnded && (
               <div className="absolute inset-0 z-30 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center text-center p-6">
                 <CheckCircle2 className="w-16 h-16 text-primary mb-4" />
@@ -214,7 +203,7 @@ export default function ModulePage() {
             )}
             
             {moduleData.video_url ? (
-              // @ts-expect-error - Tipagem do react-player conflita no build de produção
+              // @ts-ignore
               <ReactPlayer 
                 url={moduleData.video_url} 
                 width="100%" 
@@ -224,9 +213,6 @@ export default function ModulePage() {
                 onProgress={handleVideoProgress}
                 onEnded={() => setIsVideoEnded(true)}
                 onPlay={() => setIsVideoEnded(false)}
-                config={{
-                  youtube: { playerVars: { modestbranding: 1, rel: 0 } } as any
-                }}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-white/50 text-sm p-4 text-center">
@@ -244,7 +230,6 @@ export default function ModulePage() {
               <p className="text-muted-foreground mt-1">{moduleData.description}</p>
             </div>
             
-            {/* Botão de Concluir ou Desmarcar (com Modal) */}
             {isCompleted ? (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
@@ -284,7 +269,6 @@ export default function ModulePage() {
             )}
           </div>
 
-          {/* Descrição e Links da Aula */}
           {moduleData.lesson_content && (
             <Card className="mt-8 p-6 bg-card/30 backdrop-blur-xl border-border/50">
               <h3 className="text-xl font-bold tracking-tight mb-3">Sobre esta aula</h3>
@@ -315,7 +299,6 @@ export default function ModulePage() {
           )}
         </div>
 
-        {/* Coluna Lateral */}
         <div className="space-y-6">
           <Card className="p-6 bg-card/50 backdrop-blur-xl border-border/50">
             <h3 className="font-semibold mb-4">Checklist da Aula</h3>
@@ -349,7 +332,6 @@ export default function ModulePage() {
             </div>
           </Card>
 
-          {/* Materiais Dinâmicos */}
           {moduleData.materials && moduleData.materials.length > 0 && (
             <Card className="p-6 bg-secondary/30 border-border/50">
               <h3 className="font-semibold mb-2">Materiais de Apoio</h3>
