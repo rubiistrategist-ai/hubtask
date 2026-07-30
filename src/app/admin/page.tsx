@@ -252,7 +252,7 @@ export default function AdminDashboard() {
         <div className="space-y-8">
           <Button onClick={handleAddModule} className="bg-primary"><PlusCircle className="w-4 h-4 mr-2" /> Adicionar Novo Módulo</Button>
           
-          {Object.entries(sections).map(([sectionName, mods]) => (
+                    {Object.entries(sections).map(([sectionName, mods]: [string, any[]]) => (
             <div key={sectionName}>
               <h3 className="text-xl font-bold mb-4 text-primary">{sectionName}</h3>
               <div className="space-y-4 w-full">
