@@ -127,7 +127,7 @@ export default function ModulePage() {
   };
 
   // Auto-check do vídeo assistido (80%) e Auto-concluir (95%)
-  const handleVideoProgress = (state: { played: number }) => {
+    const handleVideoProgress = (state: any) => {
     if (state.played >= 0.8) {
       const key = `${moduleData.id}-Assistiu o vídeo`;
       if (!lessonChecklist[key]) {
