@@ -281,8 +281,8 @@ export default function DashboardHome() {
                 </div>
               </div>
 
-              <div 
-                ref={el => carouselRefs.current[sectionIndex] = el} 
+                            <div 
+                ref={el => { carouselRefs.current[sectionIndex] = el; }} 
                 onWheel={handleWheel} 
                 className="flex gap-6 md:gap-8 overflow-x-auto pb-8 hide-scrollbar snap-x snap-mandatory scroll-smooth"
               >
