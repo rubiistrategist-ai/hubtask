@@ -1,6 +1,5 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/utils/supabase-client";
 import { Card } from "@/components/ui/card";
@@ -35,7 +34,6 @@ export default function AdminDashboard() {
   const [isUploadingThumb, setIsUploadingThumb] = useState(false);
   const thumbInputRef = useRef<HTMLInputElement>(null);
 
-
   // Bloqueio de segurança: Se não for o admin, joga pra Home
   useEffect(() => {
     const checkAdmin = async () => {
@@ -47,8 +45,6 @@ export default function AdminDashboard() {
     checkAdmin();
   }, [router]);
 
-  const [activeTab, setActiveTab] = useState('ranking');
-  
   useEffect(() => { fetchAll(); }, []);
 
   const fetchAll = async () => {
@@ -197,7 +193,7 @@ export default function AdminDashboard() {
     toast.success("Link da comunidade salvo!");
   };
 
-    // Agrupar módulos por seção (Tipado para evitar erro no build)
+  // Agrupar módulos por seção (Tipado para evitar erro no build)
   const sections: Record<string, any[]> = modules.reduce((acc, mod) => {
     const sec = mod.section || "Curso Principal";
     if (!acc[sec]) acc[sec] = [];
@@ -270,7 +266,7 @@ export default function AdminDashboard() {
         <div className="space-y-8">
           <Button onClick={handleAddModule} className="bg-primary"><PlusCircle className="w-4 h-4 mr-2" /> Adicionar Novo Módulo</Button>
           
-      {Object.entries(sections).map(([sectionName, mods]) => (
+          {Object.entries(sections).map(([sectionName, mods]) => (
             <div key={sectionName}>
               <h3 className="text-xl font-bold mb-4 text-primary">{sectionName}</h3>
               <div className="space-y-4 w-full">
