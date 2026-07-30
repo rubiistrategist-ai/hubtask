@@ -214,7 +214,7 @@ export default function ModulePage() {
             )}
             
             {moduleData.video_url ? (
-              <ReactPlayer 
+                            <ReactPlayer 
                 url={moduleData.video_url} 
                 width="100%" 
                 height="100%" 
@@ -224,7 +224,7 @@ export default function ModulePage() {
                 onEnded={() => setIsVideoEnded(true)}
                 onPlay={() => setIsVideoEnded(false)}
                 config={{
-                  youtube: { modestbranding: 1, rel: 0 }
+                  youtube: { playerVars: { modestbranding: 1, rel: 0 } } as any
                 }}
               />
             ) : (
