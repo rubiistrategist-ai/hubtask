@@ -224,7 +224,7 @@ export default function ModulePage() {
                 onEnded={() => setIsVideoEnded(true)}
                 onPlay={() => setIsVideoEnded(false)}
                 config={{
-                  youtube: { playerVars: { modestbranding: 1, rel: 0 } }
+                  youtube: { modestbranding: 1, rel: 0 }
                 }}
               />
             ) : (
