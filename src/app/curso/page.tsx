@@ -7,8 +7,6 @@ import { Card } from "@/components/ui/card";
 import { Lock, CheckCircle2, PlayCircle, Clock } from "lucide-react";
 import { useProgressStore } from "@/store/useProgressStore";
 import { cn } from "@/lib/utils";
-import dynamic from "next/dynamic";
-const ReactPlayer = dynamic(() => import("react-player/lazy"), { ssr: false });
 
 interface Module {
   id: string;
@@ -17,6 +15,7 @@ interface Module {
   duration: string;
   order_index: number;
   thumbnail_url: string | null;
+  section: string | null;
 }
 
 export default function CourseOverview() {
@@ -40,8 +39,7 @@ export default function CourseOverview() {
         <p className="text-muted-foreground mt-3 text-lg">Complete as aulas em sequência para desbloquear o próximo módulo.</p>
       </div>
 
-      {/* Netflix Style Row */}
-      <div className="flex gap-6 overflow-x-auto pb-8 hide-scrollbar snap-x snap-mandatory">
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {modules.map((module, index) => {
           const isCompleted = completedLessons.includes(module.id);
           const isUnlocked = isLessonUnlocked(module.id, index);
@@ -50,56 +48,45 @@ export default function CourseOverview() {
           return (
             <motion.div 
               key={module.id} 
-              initial={{ opacity: 0, scale: 0.9 }} 
-              animate={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0, y: 20 }} 
+              animate={{ opacity: 1, y: 0 }} 
               transition={{ duration: 0.3, delay: index * 0.05 }}
-              className="snap-start shrink-0 w-[280px] md:w-[340px]"
+              className="snap-start shrink-0 w-full"
             >
               <Link href={isUnlocked ? `/curso/${module.id}` : "#"} className="block h-full">
                 <Card 
                   className={cn(
-                    "relative aspect-video rounded-xl overflow-hidden border-border/50 group transition-all",
+                    "card-premium p-6 bg-card/50 backdrop-blur-xl border-border/50 h-full flex flex-col justify-between relative overflow-hidden group",
                     !isUnlocked && "cursor-not-allowed"
                   )} 
                   onClick={(e) => !isUnlocked && e.preventDefault()}
                 >
-                  {/* Thumbnail Background */}
-                  <div className="absolute inset-0 bg-zinc-900">
-                    {module.thumbnail_url ? (
-                      <img src={module.thumbnail_url} alt={module.title} className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-300" />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-primary/20 to-zinc-900"></div>
-                    )}
-                  </div>
-
-                  {/* Overlay Gradient */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
-
-                  {/* Locked Overlay */}
+                  <div className="absolute -right-10 -top-10 w-32 h-32 bg-primary/10 rounded-full blur-3xl group-hover:bg-primary/20 transition-colors"></div>
+                  
                   {!isUnlocked && (
-                    <div className="absolute inset-0 bg-black/70 backdrop-blur-sm z-20 flex flex-col items-center justify-center p-4 text-center">
-                      <Lock className="w-10 h-10 text-muted-foreground mb-3" />
-                      <p className="text-sm font-medium text-muted-foreground">Termine o módulo:<br/><span className="text-foreground font-bold">{previousModule?.title}</span></p>
+                    <div className="absolute inset-0 bg-background/60 backdrop-blur-sm z-20 flex flex-col items-center justify-center p-4 text-center">
+                      <Lock className="w-8 h-8 text-muted-foreground mb-3" />
+                      <p className="text-sm font-medium text-muted-foreground">Termine o módulo:<br/><span className="text-foreground">{previousModule?.title}</span></p>
                     </div>
                   )}
 
-                  {/* Status Icon (Top Right) */}
-                  <div className="absolute top-4 right-4 z-10">
-                    {isCompleted ? (
-                      <div className="bg-primary text-primary-foreground p-1.5 rounded-full shadow-lg"><CheckCircle2 className="w-4 h-4" /></div>
-                    ) : isUnlocked ? (
-                      <div className="bg-background/80 backdrop-blur p-1.5 rounded-full shadow-lg"><PlayCircle className="w-4 h-4 text-primary" /></div>
-                    ) : null}
+                  <div className="relative z-10">
+                    <div className="flex justify-between items-center mb-4">
+                      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Módulo {index}</span>
+                      {isCompleted ? (
+                        <CheckCircle2 className="w-5 h-5 text-primary" />
+                      ) : isUnlocked ? (
+                        <PlayCircle className="w-5 h-5 text-primary" />
+                      ) : (
+                        <Lock className="w-4 h-4 text-muted-foreground" />
+                      )}
+                    </div>
+                    <h3 className="text-xl font-bold tracking-tight mb-2">{module.title}</h3>
+                    <p className="text-sm text-muted-foreground line-clamp-2">{module.description}</p>
                   </div>
 
-                  {/* Info (Bottom) */}
-                  <div className="absolute bottom-0 left-0 right-0 p-5 z-10 text-white">
-                    <span className="text-xs font-medium text-primary bg-black/50 px-2 py-0.5 rounded-md mb-2 inline-block">Módulo {index}</span>
-                    <h3 className="text-xl font-bold tracking-tight mb-1 line-clamp-1">{module.title}</h3>
-                    <p className="text-sm text-zinc-300 line-clamp-2">{module.description}</p>
-                    <div className="mt-3 flex items-center gap-2 text-xs text-zinc-400">
-                      <Clock className="w-3 h-3" /> {module.duration}
-                    </div>
+                  <div className="relative z-10 mt-6 flex items-center gap-2 text-xs text-muted-foreground">
+                    <Clock className="w-3 h-3" /> {module.duration}
                   </div>
                 </Card>
               </Link>
