@@ -24,6 +24,7 @@ import { supabase } from "@/utils/supabase-client";
 import { Lock, CheckCircle2, Circle, Award, ChevronRight, Home, RotateCcw, Download, Link as LinkIcon, ExternalLink, ArrowRight } from "lucide-react";
 
 export default function ModulePage() {
+  const Trigger = AlertDialogTrigger as any;
   const params = useParams();
   const router = useRouter();
   const moduleId = params.moduleId as string;
@@ -230,8 +231,8 @@ export default function ModulePage() {
             </div>
             
             {isCompleted ? (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
+                            <AlertDialog>
+                <Trigger asChild>
                   <Button 
                     size="lg" 
                     variant="secondary" 
