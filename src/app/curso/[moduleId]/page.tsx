@@ -17,13 +17,11 @@ import { useProgressStore } from "@/store/useProgressStore";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import Link from "next/link";
-import dynamic from "next/dynamic";
+import RPlayer from "react-player";
+const ReactPlayer = RPlayer as any;
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/utils/supabase-client";
 import { Lock, CheckCircle2, Circle, Award, ChevronRight, Home, RotateCcw, Download, Link as LinkIcon, ExternalLink, ArrowRight } from "lucide-react";
-
-// Import dinâmico para evitar bug de carregamento infinito no Next.js 15
-const ReactPlayer = dynamic(() => import("react-player/lazy"), { ssr: false });
 
 export default function ModulePage() {
   const Trigger = AlertDialogTrigger as any;
@@ -60,11 +58,12 @@ export default function ModulePage() {
     fetchModule();
   }, [moduleId, setModuleOrder]);
 
-  // Temporizador de Segurança: Se o YouTube não avisar que carregou em 5s, esconde o skeleton na força
+  // TEMPORIZADOR DE SEGURANÇA: Força o skeleton a sumir após 4 segundos
+  // Isso resolve o bug do YouTube não disparar o "onReady" no Next.js 15
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsPlayerReady(true);
-    }, 5000);
+    }, 4000);
     return () => clearTimeout(timer);
   }, [moduleId]);
 
