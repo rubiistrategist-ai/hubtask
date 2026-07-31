@@ -58,12 +58,9 @@ export default function ModulePage() {
     fetchModule();
   }, [moduleId, setModuleOrder]);
 
-  // TEMPORIZADOR DE SEGURANÇA: Força o skeleton a sumir após 4 segundos
-  // Isso resolve o bug do YouTube não disparar o "onReady" no Next.js 15
+  // Temporizador de segurança para esconder o skeleton
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsPlayerReady(true);
-    }, 4000);
+    const timer = setTimeout(() => setIsPlayerReady(true), 2000);
     return () => clearTimeout(timer);
   }, [moduleId]);
 
@@ -72,6 +69,13 @@ export default function ModulePage() {
       nextLessonBtnRef.current.focus();
     }
   }, [isVideoEnded]);
+
+  // Função para extrair o ID do YouTube
+  const getYouTubeID = (url: string) => {
+    if (!url) return null;
+    const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+    return match ? match[1] : null;
+  };
 
   if (!moduleData) {
     return (
@@ -115,10 +119,7 @@ export default function ModulePage() {
       
       if (nextModule) {
         toast.success("Aula concluída! Avançando para a próxima...", {
-          action: {
-            label: "Ficar aqui",
-            onClick: () => clearTimeout(timer),
-          }
+          action: { label: "Ficar aqui", onClick: () => clearTimeout(timer) }
         });
         const timer = setTimeout(() => router.push(`/curso/${nextModule.id}`), 2500);
       } else {
@@ -135,19 +136,9 @@ export default function ModulePage() {
   const handleVideoProgress = (state: any) => {
     if (state.played >= 0.8) {
       const key = `${moduleData.id}-Assistiu o vídeo`;
-      if (!lessonChecklist[key]) {
-        toggleLessonChecklist(key);
-      }
+      if (!lessonChecklist[key]) toggleLessonChecklist(key);
     }
-    
-    if (state.played >= 0.95 && !isCompleted) {
-      handleComplete(true);
-    }
-  };
-
-  const handleVideoError = () => {
-    setIsPlayerReady(true);
-    toast.error("Erro ao carregar o vídeo. Verifique se o link está correto no painel admin.");
+    if (state.played >= 0.95 && !isCompleted) handleComplete(true);
   };
 
   const isLastModule = currentIndex === allModules.length - 1;
@@ -173,6 +164,8 @@ export default function ModulePage() {
       </div>
     );
   }
+
+  const videoId = getYouTubeID(moduleData.video_url);
 
   return (
     <div className="p-6 md:p-10 max-w-6xl mx-auto pt-20 md:pt-10">
@@ -219,17 +212,33 @@ export default function ModulePage() {
             )}
             
             {moduleData.video_url ? (
-              <ReactPlayer 
-                url={moduleData.video_url} 
-                width="100%" 
-                height="100%" 
-                controls={true}
-                onReady={() => setIsPlayerReady(true)}
-                onError={handleVideoError}
-                onProgress={handleVideoProgress}
-                onEnded={() => setIsVideoEnded(true)}
-                onPlay={() => setIsVideoEnded(false)}
-              />
+              <>
+                {/* IFROME NATIVO VISÍVEL (Infalível) */}
+                {videoId && (
+                  <iframe
+                    src={`https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`}
+                    title="YouTube video player"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="absolute inset-0 w-full h-full z-10"
+                    onLoad={() => setIsPlayerReady(true)}
+                  />
+                )}
+
+                {/* REACT PLAYER INVISÍVEL (Apenas para rastrear o progresso e dar auto-complete) */}
+                <div className="absolute inset-0 w-full h-full opacity-0 pointer-events-none -z-10">
+                  <ReactPlayer 
+                    url={moduleData.video_url} 
+                    width="100%" 
+                    height="100%" 
+                    controls={false}
+                    playing={false}
+                    onProgress={handleVideoProgress}
+                    onEnded={() => setIsVideoEnded(true)}
+                  />
+                </div>
+              </>
             ) : (
               <div className="w-full h-full flex items-center justify-center text-white/50 text-sm p-4 text-center">
                 Vídeo não configurado. Adicione o link no painel Admin.
@@ -249,11 +258,7 @@ export default function ModulePage() {
             {isCompleted ? (
               <AlertDialog>
                 <Trigger asChild>
-                  <Button 
-                    size="lg" 
-                    variant="secondary" 
-                    className="mt-4 md:mt-0 border-red-500/30 text-red-500 hover:bg-red-500/10 hover:text-red-500"
-                  >
+                  <Button size="lg" variant="secondary" className="mt-4 md:mt-0 border-red-500/30 text-red-500 hover:bg-red-500/10 hover:text-red-500">
                     <RotateCcw className="mr-2 h-5 w-5" />
                     Desmarcar Aula
                   </Button>
@@ -274,11 +279,7 @@ export default function ModulePage() {
                 </AlertDialogContent>
               </AlertDialog>
             ) : (
-              <Button 
-                size="lg" 
-                onClick={() => handleComplete(false)}
-                className="mt-4 md:mt-0 bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20"
-              >
+              <Button size="lg" onClick={() => handleComplete(false)} className="mt-4 md:mt-0 bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20">
                 <CheckCircle2 className="mr-2 h-5 w-5" />
                 Marcar como concluída
               </Button>
@@ -296,16 +297,8 @@ export default function ModulePage() {
                     <LinkIcon className="w-4 h-4 text-primary" /> Links Importantes
                   </h4>
                   {moduleData.links.map((link: any, i: number) => (
-                    <a 
-                      key={i} 
-                      href={link.url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="group flex items-center justify-between p-4 rounded-lg bg-primary/10 hover:bg-primary/20 border border-primary/30 transition-all"
-                    >
-                      <span className="text-sm font-medium text-primary">
-                        {link.label}
-                      </span>
+                    <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className="group flex items-center justify-between p-4 rounded-lg bg-primary/10 hover:bg-primary/20 border border-primary/30 transition-all">
+                      <span className="text-sm font-medium text-primary">{link.label}</span>
                       <ExternalLink className="w-4 h-4 text-primary" />
                     </a>
                   ))}
@@ -322,21 +315,10 @@ export default function ModulePage() {
               {moduleData.checklist && Array.isArray(moduleData.checklist) && moduleData.checklist.map((item: string, i: number) => {
                 const key = `${moduleData.id}-${item}`;
                 const isChecked = lessonChecklist[key] || false;
-                
                 return (
-                  <button 
-                    key={i} 
-                    onClick={() => toggleLessonChecklist(key)}
-                    className="flex items-center gap-2 w-full text-left group transition-all"
-                  >
-                    {isChecked ? (
-                      <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
-                    ) : (
-                      <Circle className="w-4 h-4 text-muted-foreground/50 group-hover:text-primary shrink-0 transition-colors" />
-                    )}
-                    <span className={`transition-colors ${isChecked ? "text-muted-foreground line-through" : "text-foreground/90"}`}>
-                      {item}
-                    </span>
+                  <button key={i} onClick={() => toggleLessonChecklist(key)} className="flex items-center gap-2 w-full text-left group transition-all">
+                    {isChecked ? <CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> : <Circle className="w-4 h-4 text-muted-foreground/50 group-hover:text-primary shrink-0 transition-colors" />}
+                    <span className={`transition-colors ${isChecked ? "text-muted-foreground line-through" : "text-foreground/90"}`}>{item}</span>
                   </button>
                 );
               })}
