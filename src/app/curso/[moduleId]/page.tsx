@@ -17,11 +17,13 @@ import { useProgressStore } from "@/store/useProgressStore";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import Link from "next/link";
-import RPlayer from "react-player";
-const ReactPlayer = RPlayer as any;
+import dynamic from "next/dynamic";
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/utils/supabase-client";
 import { Lock, CheckCircle2, Circle, Award, ChevronRight, Home, RotateCcw, Download, Link as LinkIcon, ExternalLink, ArrowRight } from "lucide-react";
+
+// Import dinâmico para evitar bug de carregamento infinito no Next.js 15
+const ReactPlayer = dynamic(() => import("react-player/lazy"), { ssr: false });
 
 export default function ModulePage() {
   const Trigger = AlertDialogTrigger as any;
@@ -57,6 +59,14 @@ export default function ModulePage() {
     };
     fetchModule();
   }, [moduleId, setModuleOrder]);
+
+  // Temporizador de Segurança: Se o YouTube não avisar que carregou em 5s, esconde o skeleton na força
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsPlayerReady(true);
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [moduleId]);
 
   useEffect(() => {
     if (isVideoEnded && nextLessonBtnRef.current) {
@@ -136,7 +146,6 @@ export default function ModulePage() {
     }
   };
 
-  // Tratar erro de vídeo (evita loading infinito caso o link seja inválido)
   const handleVideoError = () => {
     setIsPlayerReady(true);
     toast.error("Erro ao carregar o vídeo. Verifique se o link está correto no painel admin.");
