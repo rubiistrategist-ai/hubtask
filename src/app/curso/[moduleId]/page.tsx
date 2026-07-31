@@ -136,6 +136,12 @@ export default function ModulePage() {
     }
   };
 
+  // Tratar erro de vídeo (evita loading infinito caso o link seja inválido)
+  const handleVideoError = () => {
+    setIsPlayerReady(true);
+    toast.error("Erro ao carregar o vídeo. Verifique se o link está correto no painel admin.");
+  };
+
   const isLastModule = currentIndex === allModules.length - 1;
   const courseCompleted = isLastModule && isCompleted;
 
@@ -203,6 +209,7 @@ export default function ModulePage() {
                 )}
               </div>
             )}
+            
             {moduleData.video_url ? (
               <ReactPlayer 
                 url={moduleData.video_url} 
@@ -210,6 +217,7 @@ export default function ModulePage() {
                 height="100%" 
                 controls={true}
                 onReady={() => setIsPlayerReady(true)}
+                onError={handleVideoError}
                 onProgress={handleVideoProgress}
                 onEnded={() => setIsVideoEnded(true)}
                 onPlay={() => setIsVideoEnded(false)}
@@ -231,7 +239,7 @@ export default function ModulePage() {
             </div>
             
             {isCompleted ? (
-                            <AlertDialog>
+              <AlertDialog>
                 <Trigger asChild>
                   <Button 
                     size="lg" 
@@ -241,7 +249,7 @@ export default function ModulePage() {
                     <RotateCcw className="mr-2 h-5 w-5" />
                     Desmarcar Aula
                   </Button>
-                               </Trigger>
+                </Trigger>
                 <AlertDialogContent className="bg-card/90 backdrop-blur-xl border-border/50">
                   <AlertDialogHeader>
                     <AlertDialogTitle>Desmarcar esta aula?</AlertDialogTitle>
